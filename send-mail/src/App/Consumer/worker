@@ -6,6 +6,7 @@ require_once __DIR__ . "./../Classes/SendMailClass.php";
 require_once __DIR__ . "./../../Config/MailConfig.php";
 require_once __DIR__ . "./../../../vendor/phpmailer/phpmailer/src/PHPMailer.php";
 require_once __DIR__ . "./../../../vendor/phpmailer/phpmailer/src/SMTP.php";
+require_once __DIR__ . "./../../../vendor/phpmailer/phpmailer/src/Exception.php";
 
 $host = $_ENV['MYSQL_HOST'];
 $dbname = $_ENV['MYSQL_DATABASE'];
@@ -15,17 +16,27 @@ $password = $_ENV['MYSQL_PASSWORD'];
 $dsn = "mysql:host=$host;dbname=$dbname";
 $pdo = new PDO($dsn, $username, $password);
 
-while(true) {
-    $sql = "SELECT * FROM my_database.queue ORDER BY id ASC;";
-
+echo "\033[33mConsumer iniciado... \033[0m\n";
+while (true) {
+    $sql = "SELECT * FROM {$dbname}.queue WHERE status = 0 ORDER BY id ASC;";
     $stmt = $pdo->query($sql);
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     foreach ($results as $key => $value) {
-        (new $value['namespace']())->handle((array)json_decode(($value['payload'])));
+        $executionTime = microtime(true);
+        echo "\033[33mJob {$value['namespace']} sendo processado... \033[0m\n";
+        try {
+            (new $value['namespace']())->handle((array)json_decode(($value['payload'])));
+            echo "\033[32mJob {$value['namespace']} processado com sucesso! \033[0m\n";
+            echo "\033[32mTempo de execução: " . microtime(true) - $executionTime . " \033[0m\n";
+            $sql = "UPDATE {$dbname}.queue SET status = 1 WHERE id = {$value['id']};";
+            $pdo->query($sql);
+        } catch (\Exception $e) {
+            $sql = "UPDATE {$dbname}.queue SET status = 2 WHERE id = {$value['id']};";
+            $pdo->query($sql);
+            echo "\033[31mErro: " . $e->getMessage() . " \033[0m\n";
+        }
     }
 
-    if ($results[0])
-    echo "Aguardando...\n";
     sleep(1);
 }

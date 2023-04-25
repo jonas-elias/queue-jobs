@@ -19,7 +19,7 @@ class SendMailJob
             $attributes->__set('to', $params['to']);
             $attributes->__set('subject', $params['subject']);
             $attributes->__set('message', $params['message']);
-    
+
             $sendMail = new SendMailClass($attributes);
             $sendMail->sendMail();
         } catch (\Exception $e) {
