@@ -23,7 +23,7 @@ class MailConfig
      * @example
      * mail@hotmail.com
      */
-    public static $emailName;
+    public static $emailName = 'youremail@hotmail.com';
 
     /**
      * Mail password
@@ -31,7 +31,7 @@ class MailConfig
      * @example
      * password
      */
-    public static $emailPassword;
+    public static $emailPassword = 'yourpasswordemail';
 
     /**
      * Port service mail
