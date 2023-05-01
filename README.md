@@ -8,7 +8,7 @@ Este repositório contém uma implementação de uma fila de jobs para envio de 
 Para executar o projeto, execute o seguinte comando na pasta 'docker' do projeto:
 
 ```bash
-  docker compose up -d
+docker compose up -d
 ```
 
 ## Autores
